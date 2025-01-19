@@ -47,7 +47,6 @@ package AUBase
 import (
 	autypes "agnione/v1/src/aau/types"
 	ihttp "agnione/v1/src/afplugins/http/iahttpclient" /// import the httplcient interface
-	amailer "agnione/v1/src/afplugins/mailer/iamailer"
 	"agnione/v1/src/afplugins/websocket/iawsclient"
 	iappfm "agnione/v1/src/appfm/iappfw"
 	atypes "agnione/v1/src/appfm/types"
@@ -267,7 +266,7 @@ func (appu *AUBase) Status() *atypes.AppUnitInfo {
 
 
 // Increase_Active_Count +1 total active processing message count of 
-func (appu *AUBase) Increse_Active_Count() {
+func (appu *AUBase) Increase_Active_Count() {
 	
 		appu.Info_Lock.Lock()
 		defer appu.Info_Lock.Unlock()
@@ -355,15 +354,6 @@ func (appu *AUBase) Get_WSClient(pType *string) (iawsclient.IAWSClient, error) {
 }
 
 
-// Get_Mailer returns the EMail client library plugin instance
-func (appu *AUBase) Get_Mailer(pType *string) (amailer.IAMailMessage, error) {
-	if appu.AppFramework == nil {
-		return nil, errors.New("app instance is not initialized")
-	} else {
-		return appu.AppFramework.Get_Mailer(pType)
-	}
-}
-	
 
 // Get_RESTClient returns the Logger plugin instance
 func (appu *AUBase) ExecuteandFetch(os_command *string) (string, error) {
