@@ -1,2 +1,3 @@
-# libs
-Libraries for AgniOne framework , plugins and units implementation
+# AgniPackages
+
+This Repository contains the packages/libraies for AgniOne Plugins,Unit and Framework implementation.
