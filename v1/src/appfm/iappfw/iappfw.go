@@ -62,7 +62,6 @@ package iappfw
 
 import (
 	ihttp "agnione/v1/src/afplugins/http/iahttpclient" /// import the httplcient interface
-	iwl "agnione/v1/src/afplugins/mailer/iamailer"     /// import the wsclient interface
 	iws "agnione/v1/src/afplugins/websocket/iawsclient"
 	atypes "agnione/v1/src/appfm/types"
 	"context"
@@ -228,12 +227,7 @@ type IAgniApp interface {
 	// 	Returns unit info and nil if the given uint's status is successfully fetched. Unless returns nil and error
 	Unit_Status(pUnitName *string)(*atypes.AppUnitInfo,error)
 	
-	// Get_Mailer returns the instance of mailer that can be used to send emails
-	//	pType parameter will determine which mail plugin in should load.
-	// A new instance will be created and return.
-	// If failed then returns nil and error
-	Get_Mailer(pType *string) (iwl.IAMailMessage, error)
-
+	
 	// Get_WSClient returns the instance of the Web Socket client defined in the config file
 	// A new instance will be created and return.
 	// If failed then returns nil and error
