@@ -33,7 +33,7 @@
 //     ---------------------------------------------------------------------------------------------------------------------
 package iconfigreader
 
-import build "agnione/v1/src/lib"
+import build "agnione/v2/src/lib"
 
 type IAConfigReader interface {
 

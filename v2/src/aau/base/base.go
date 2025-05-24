@@ -12,7 +12,7 @@
 //   - Remove_Routine
 //   - Get_ID
 //   - Get_PID
-//   - Get_KAUUID
+//   - Get_UID
 //   - Status
 //   - Generate_Monitoring_Message
 //   - ConvertToFloat32
@@ -45,29 +45,30 @@
 package AUBase
 
 import (
-	autypes "agnione/v1/src/aau/types"
-	ihttp "agnione/v1/src/afplugins/http/iahttpclient" /// import the httplcient interface
-	"agnione/v1/src/afplugins/websocket/iawsclient"
-	iappfm "agnione/v1/src/appfm/iappfw"
-	atypes "agnione/v1/src/appfm/types"
+	autypes "agnione/v2/src/aau/types"
+	ihttp "agnione/v2/src/afplugins/http/iahttpclient" /// import the httplcient interface
+	"agnione/v2/src/afplugins/websocket/iawsclient"
+	iappfm "agnione/v2/src/appfm/iappfw"
+	atypes "agnione/v2/src/appfm/types"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime"
 	"strconv"
 	"sync"
+	"sync/atomic"
 )
 
 // AUBase base struct to hold the propeties of the Application unit
 type AUBase struct {
 	Info_Lock      *sync.Mutex
 	Unit_Info      *atypes.AppUnitInfo
-	ID             int /// ID of the instance
-	AppFramework   iappfm.IAgniApp	/// instance of the running framework
-	Unit_Name      string	
-	Config_File      string	
+	ID             int             /// ID of the instance
+	AppFramework   iappfm.IAgniApp /// instance of the running framework
+	Unit_Name      string
+	Config_File    string
 	Unit_Path      string
-	App_UID string
+	App_UID        string
 	Stopper        chan bool
 	Is_Started     bool
 	Is_Initialized bool
@@ -78,16 +79,16 @@ type AUBase struct {
 // Reterns true and nil when success
 // If failed then returns false and error message
 func (appu *AUBase) Initialize(pFM_Instance iappfm.IAgniApp, pInstance_ID int,
-	 pUnit_Name string, pUnit_Path string,pConfig_File string,) (bool, error) {
+	pUnit_Name string, pUnit_Path string, pConfig_File string) (bool, error) {
 
 	if pFM_Instance == nil {
 		appu.Is_Initialized = false
-		appu.AppFramework.Send_Monitor_Message([]byte(fmt.Sprintf("%d fm_instance iappfm.IAgniApp is NIL", pInstance_ID)))
+		appu.AppFramework.Write2Console(fmt.Sprintf("%d fm_instance iappfm.IAgniApp is NIL", pInstance_ID))
 		return false, fmt.Errorf("%d fm_instance iappfm.IKApp is NIL", pInstance_ID)
 	}
-	
-	appu.Unit_Info=new(atypes.AppUnitInfo)
-	
+
+	appu.Unit_Info = new(atypes.AppUnitInfo)
+
 	appu.AppFramework = pFM_Instance
 	appu.ID = pInstance_ID
 	appu.Unit_Name = pUnit_Name
@@ -99,8 +100,7 @@ func (appu *AUBase) Initialize(pFM_Instance iappfm.IAgniApp, pInstance_ID int,
 	appu.Stopper = nil
 
 	appu.Read_Memory_Usage()
-	
-	
+
 	return true, nil
 }
 
@@ -129,91 +129,58 @@ func (appu *AUBase) Stop() (bool, error) {
 		return false, fmt.Errorf("instance is not initialized")
 	}
 	//fmt.Printf("%d In the  BASE STOP %s..... 2 \n", appu.ID, appu.Unit_name)
-	appu.AppFramework.Write2Log(appu.App_UID + " - Stopping the AUBase.....", atypes.LOG_INFO)
-	appu.AppFramework.Send_Monitor_Message([]byte(appu.App_UID + " - Stopping the AUBase....."))
+	appu.AppFramework.Write2Log(appu.App_UID+" - Stopping the AUBase.....", atypes.LOG_INFO)
+	appu.AppFramework.Send_Event(appu.App_UID + " - Stopping the AUBase.....")
 
-	if !appu.Is_Started {		
-		appu.AppFramework.Write2Log(appu.App_UID + " - Failed to Stopping the AUBase. Instance process is not started", atypes.LOG_INFO)
-		appu.AppFramework.Send_Monitor_Message([]byte(appu.App_UID + " - Stopping the AUBase. Instance process is not started"))
+	if !appu.Is_Started {
+		appu.AppFramework.Write2Log(appu.App_UID+" - Failed to Stopping the AUBase. Instance process is not started", atypes.LOG_INFO)
+		appu.AppFramework.Send_Event(appu.App_UID + " - Stopping the AUBase. Instance process is not started")
 		return false, fmt.Errorf("instance process is not started")
 	}
 
 	if appu.Stopper != nil {
-		appu.Write2Log(appu.App_UID + " - Closing the AUBase Stopper chan .....", atypes.LOG_INFO)
+		appu.Write2Log(appu.App_UID+" - Closing the AUBase Stopper chan .....", atypes.LOG_INFO)
 		close(appu.Stopper)
-		appu.Write2Log(appu.App_UID + " - Closing the AUBase Stopper chan ........DONE", atypes.LOG_INFO)
+		appu.Write2Log(appu.App_UID+" - Closing the AUBase Stopper chan ........DONE", atypes.LOG_INFO)
 	}
 
-	appu.AppFramework.Write2Log(appu.App_UID + " - Stopping the AUBase..... DONE", atypes.LOG_INFO)
-	appu.AppFramework.Send_Monitor_Message([]byte(appu.App_UID + " - Stopping the AUBase.....DONE"))
+	appu.AppFramework.Write2Log(appu.App_UID+" - Stopping the AUBase..... DONE", atypes.LOG_INFO)
+	appu.AppFramework.Send_Event(appu.App_UID + " - Stopping the AUBase.....DONE")
 	appu.Is_Started = false
-	
+
 	return true, nil
 }
 
 // Add_Routine increment the routine total routine count of the AppFramework
 // and the current application unit
 func (appu *AUBase) Add_Routine() {
-	
-
-	appu.Info_Lock.Lock()
-	defer appu.Info_Lock.Unlock()
-	appu.Unit_Info.Routines++
-	
-	go func ()  {
-		defer recover()
-		appu.AppFramework.Add_Routine()
-		///appu.AppFramework.Set_Unitinfo(&appu.ID,appu.Unit_Info)
-	
-	}()
-	
+	defer recover()
+	atomic.AddUint32(&appu.Unit_Info.Routines, 1)
+	appu.AppFramework.Add_Routine()
 }
 
 // Remove_Routine decrement the total routine count of the AppFramework
 // and the current application unit
 func (appu *AUBase) Remove_Routine() {
-	
-	appu.Info_Lock.Lock()
-	defer appu.Info_Lock.Unlock()
-	appu.Unit_Info.Routines--
-	
-	go func(){
-		defer recover()
-		appu.AppFramework.Remove_Routine()
-	}()
-	
-
+	defer recover()
+	atomic.AddUint32(&appu.Unit_Info.Routines, ^uint32(0))
+	appu.AppFramework.Remove_Routine()
 }
 
 // Add_Request_Handled_Count increment the total requests handled of the AppFramework
 // and the current application unit
 func (appu *AUBase) Add_Request_Handled_Count() {
-	
-	
-	appu.Info_Lock.Lock()
-	defer appu.Info_Lock.Unlock()
-	appu.Unit_Info.Req_Handled++
-	
-	go func(){
-		defer recover()
-		appu.AppFramework.Add_Request_HandleCount()
-	}()
-
+	defer recover()
+	atomic.AddUint32(&appu.Unit_Info.Req_Handled, 1)
+	appu.AppFramework.Add_Request_HandleCount()
 }
 
 // Add_Request_Failed_Count increment the total failed requests of the AppFramework
 // and the current application unit
 func (appu *AUBase) Add_Request_Failed_Count() {
-	
-	appu.Info_Lock.Lock()
-	defer appu.Info_Lock.Unlock()
-	appu.Unit_Info.Req_Failed++
-	
-	
-	go func ()  {
-		defer recover()
-		appu.AppFramework.Add_Request_Failed_Count()
-	}()
+	defer recover()
+	atomic.AddUint32(&appu.Unit_Info.Req_Failed, 1)
+	appu.AppFramework.Add_Request_Failed_Count()
 }
 
 // IsInitialized returns the initialize status of the application unit
@@ -221,7 +188,7 @@ func (appu *AUBase) IsInitialized() bool {
 	return appu.Is_Initialized
 }
 
-/// Returns the ZAU instance ID
+// / Returns the ZAU instance ID
 func (appu *AUBase) Get_ID() (instance_ID int) {
 	if !appu.Is_Initialized {
 		fmt.Println("Not Initialized.")
@@ -230,9 +197,8 @@ func (appu *AUBase) Get_ID() (instance_ID int) {
 	return appu.ID
 }
 
-
-/// Returns the Application PID
-func (appu *AUBase) Get_PID() ( int) {
+// / Returns the Application PID
+func (appu *AUBase) Get_PID() int {
 	if !appu.Is_Initialized {
 		fmt.Println("Not Initialized.")
 		return 0
@@ -240,17 +206,15 @@ func (appu *AUBase) Get_PID() ( int) {
 	return appu.AppFramework.PID()
 }
 
-
-/// Returns the Application PID
-func (appu *AUBase) Get_AUID() ( string) {
+// / Returns the Application PID
+func (appu *AUBase) Get_AUID() string {
 	if !appu.Is_Initialized {
 		fmt.Println("Not Initialized.")
 		return ""
 	}
-	
+
 	return strconv.Itoa(appu.ID) + "-" + strconv.Itoa(appu.AppFramework.PID())
 }
-
 
 // IsStarted returns the start status of the application unit
 func (appu *AUBase) IsStarted() bool {
@@ -264,28 +228,20 @@ func (appu *AUBase) Status() *atypes.AppUnitInfo {
 	return appu.Unit_Info
 }
 
-
-// Increase_Active_Count +1 total active processing message count of 
+// Increase_Active_Count +1 total active processing message count of
 func (appu *AUBase) Increase_Active_Count() {
-	
-		appu.Info_Lock.Lock()
-		defer appu.Info_Lock.Unlock()
-		appu.Unit_Info.Active++
+	atomic.AddUint32(&appu.Unit_Info.Active, 1)
 }
 
-// Decrease_Active_Count -1 total active processing message count of 
+// Decrease_Active_Count -1 total active processing message count of
 func (appu *AUBase) Decrease_Active_Count() {
-	
-	appu.Info_Lock.Lock()
-	defer appu.Info_Lock.Unlock()
-	appu.Unit_Info.Active--
+	atomic.AddUint32(&appu.Unit_Info.Active, ^uint32(0))
 }
 
+func (appu *AUBase) Generate_Event_Message(pAppID string, pID string, pStatus string, pInfo map[string]string) []byte {
 
-func (appu *AUBase) Generate_Monitoring_Message(pAppID string, pID string, pStatus string, pInfo map[string]string) []byte {
-	
 	defer recover()
-	
+
 	if appu.AppFramework == nil {
 		return nil
 	}
@@ -296,7 +252,6 @@ func (appu *AUBase) Generate_Monitoring_Message(pAppID string, pID string, pStat
 		return _msg
 	}
 }
-
 
 // ConvertToFloat32 converts the given value to float32 type.
 //
@@ -315,24 +270,22 @@ func (appu *AUBase) ConvertToFloat32(pValue string) float32 {
 	}
 }
 
-
 // ConvertToInt32 converts the given value to Int32 type.
 //
-// Returns int32 value 
-// If failed then returns -1 
+// Returns int32 value
+// If failed then returns -1
 func (appu *AUBase) ConvertToInt32(pValue string) int32 {
 
 	if pValue == "" {
 		return -1
 	}
 
-	if _val, _err := strconv.ParseInt(pValue, 10,32); _err != nil {
+	if _val, _err := strconv.ParseInt(pValue, 10, 32); _err != nil {
 		return -1
 	} else {
 		return int32(_val)
 	}
 }
-
 
 // ******** PLUGIN functions *********************/
 // Get_RESTClient returns the REST client plugin instance
@@ -353,8 +306,6 @@ func (appu *AUBase) Get_WSClient(pType *string) (iawsclient.IAWSClient, error) {
 	}
 }
 
-
-
 // Get_RESTClient returns the Logger plugin instance
 func (appu *AUBase) ExecuteandFetch(os_command *string) (string, error) {
 	if appu.AppFramework == nil {
@@ -365,27 +316,18 @@ func (appu *AUBase) ExecuteandFetch(os_command *string) (string, error) {
 }
 
 func (appu *AUBase) Send_Monitor_Message(pMessage []byte) {
-	
-	go func ()  {
-		defer recover()
-		appu.AppFramework.Send_Monitor_Message(pMessage)
-	}()
+	appu.AppFramework.Send_Event(string(pMessage))
 }
 
 func (appu *AUBase) Write2Log(log_entry string, log_level atypes.LogLevel) {
-	go func ()  {
-		defer recover()
-		
-		appu.AppFramework.Write2Log(log_entry, log_level)
-	}()
+	appu.AppFramework.Write2Log(log_entry, log_level)
 }
-
 
 func (appu *AUBase) Read_Memory_Usage() {
 	var _currentMem runtime.MemStats
 	runtime.ReadMemStats(&_currentMem)
-	
-	appu.Unit_Info.Mem_Usage.Heap=_currentMem.Alloc-appu.Unit_Info.Mem_Usage.Heap
-	appu.Unit_Info.Mem_Usage.HeapAlloc=_currentMem.HeapAlloc-appu.Unit_Info.Mem_Usage.HeapAlloc
-	appu.Unit_Info.Mem_Usage.Total=_currentMem.TotalAlloc-appu.Unit_Info.Mem_Usage.Total
+
+	appu.Unit_Info.Mem_Usage.Heap = _currentMem.Alloc - appu.Unit_Info.Mem_Usage.Heap
+	appu.Unit_Info.Mem_Usage.HeapAlloc = _currentMem.HeapAlloc - appu.Unit_Info.Mem_Usage.HeapAlloc
+	appu.Unit_Info.Mem_Usage.Total = _currentMem.TotalAlloc - appu.Unit_Info.Mem_Usage.Total
 }

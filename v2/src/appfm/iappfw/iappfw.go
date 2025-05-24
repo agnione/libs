@@ -20,7 +20,7 @@
 //   - HandledRequestCount
 //   - FailedRequestCount
 //   - Started
-//   - SendMonitorMessage
+//   - Send_Event
 //   - GetContext
 //   - GetAppStatus
 //   - GetAppInfo
@@ -61,9 +61,9 @@
 package iappfw
 
 import (
-	ihttp "agnione/v1/src/afplugins/http/iahttpclient" /// import the httplcient interface
-	iws "agnione/v1/src/afplugins/websocket/iawsclient"
-	atypes "agnione/v1/src/appfm/types"
+	ihttp "agnione/v2/src/afplugins/http/iahttpclient" /// import the httplcient interface
+	iws "agnione/v2/src/afplugins/websocket/iawsclient"
+	atypes "agnione/v2/src/appfm/types"
 	"context"
 	"time"
 )
@@ -74,15 +74,6 @@ type IAgniApp interface {
 	// 	Returns true and nil if configuration loaded successfully.
 	//	Unless returns false and error
 	Reload_Config() (bool, error)
-
-	// Start_WSMonitor starts the web socket monitoring with the pre-set configuration in config file
-	// 	Returns true and nil if it started successfully.
-	// 	Unless returns false and error
-	Start_WSMonitor() (bool, error)
-
-	// StopWSMonitor stops the web socket monitoring
-	// 	Returns true if it started successfully. Unless returns false
-	Stop_WSMonitor() bool
 
 	// Is_Interrupted returns the application interrupt channel to the caller.
 	// 	External routines should check this channel as a terminator of routines.
@@ -97,12 +88,9 @@ type IAgniApp interface {
 	//	Parameter log_level ztypes.LogLevel - log level to use when writing the log entry
 	Write2Log(pEntry string, pLog_Level atypes.LogLevel)
 
-
 	// Set_LogLevel set/override the curren runtime log level with given level
 	// 	Parameter pLogLevel  atypes.LogLevel - valid enum of  atypes.LogLevel
 	Set_LogLevel(pLogLevel atypes.LogLevel)
-
-
 
 	// Add_Routine increments the routine count of the Application Framework and
 	//	adds 1 to the framework waitgroup
@@ -133,7 +121,7 @@ type IAgniApp interface {
 	App_Path() *string
 
 	// Routine_Count returns the number of routines currently running
-	Routine_Count() uint16
+	Routine_Count() uint32
 
 	// Execute_Command executes the given OS command and returns result
 	//	command string parameter - the command to execute with arguments
@@ -151,8 +139,8 @@ type IAgniApp interface {
 	// 	Also, it should be used with CAUTION.
 	// 	Returns the true if given content is valid app.config content and saved successfully.
 	// 	Unless returns false and error
-	Save_App_Config(pAppConfigData *[]byte)(bool, error)
-	
+	Save_App_Config(pAppConfigData *[]byte) (bool, error)
+
 	// Add_Request_Failed_Count adds 1 to the request failed handle count.
 	// 	This function is useful to external modules to update his request handle count
 	// 	Will be used in sending status messages over REST and websockets
@@ -171,17 +159,20 @@ type IAgniApp interface {
 	// 	If the web socket monitoring is not started then this message will be discarded.
 	// 	If web socket monitoring has been started then the message will be broadcasted among
 	// 	connected monitoring web socket clients
-	Send_Monitor_Message(pMessage []byte)
+	Send_Event(pMessage string)
 
 	// Get_App_Status returns the current application status as [ztypes.AppStatus] [http://example.com]
 	Get_App_Status() atypes.AppStatus
+
+	// Get_App_Status returns the current application Units ready status as [atypes.AppReady_Status] [http://example.com]
+	Get_Ready_Status() *atypes.AppReady_Status
 
 	// Get_App_Info returns the current application information as [ztypes.AppInfo] http://example.com
 	Get_App_Info() atypes.AppInfo
 
 	// Get_Context returns the current application context object
 	Get_Context() *context.Context
-	
+
 	// Get_FileInfo returns the information of the given file in format of FileInfo struct
 	Get_FileInfo(pFileName *string) (*atypes.FileInfo, error)
 
@@ -189,7 +180,7 @@ type IAgniApp interface {
 	// 	Returns file content []bytes,nil if successful.
 	// 	Unless returns nil and error
 	Get_File_Content(pFileName *string) (*[]byte, error)
-		
+
 	// Logfile_Basepath returns the string of the log base path.
 	Logfile_Basepath() *string
 
@@ -201,33 +192,32 @@ type IAgniApp interface {
 	// 	Unless returns nil and error
 	Get_FileContent_Lines(pFileName *string) (*[]string, error)
 
-// Write_FileContent writes the given content []byte to the given filename.
+	// Write_FileContent writes the given content []byte to the given filename.
 	// 	Returns true and nil if file exists. Unless returns nil and error
 	Write_FileContent(pFileName *string, pData *[]byte) (bool, error)
-	
+
 	// Units_List returns the units given in the app.config file.
 	// 	Returns true and nil if list successfully loaded. Unless returns nil and error
 	Units_List() ([]atypes.Appunit, error)
-	
+
 	// Unit_Stop stops the given unit (if unit is loaded & running).
 	//	pForce parameter determine that the unit should load in force or wait until all the current execution stops.
 	// 	Returns true and nil if the given uint is successfully stopped. Unless returns nil and error
-	Unit_Stop(pUnitName *string,pForce bool)(bool,error)
-	
+	Unit_Stop(pUnitName *string, pForce bool) (bool, error)
+
 	// Unit_Start starts the given unit (if unit is nit loaded & not running).
 	// 	Returns true and nil if the given uint is successfully loaded and running. Unless returns nil and error
-	Unit_Start(pUnitName *string)(bool,error)
-	
+	Unit_Start(pUnitName *string) (bool, error)
+
 	// Unit_Restart re-starts the given unit.
 	//	pForce parameter determine that the unit should perform the stop and start in force or wait until all the current execution stops.
 	// 	Returns true and nil if the given uint is successfully restarted. Unless returns nil and error
-	Unit_Restart(pUnitName *string,pForce bool)(bool,error)
-		
+	Unit_Restart(pUnitName *string, pForce bool) (bool, error)
+
 	// Unit_Status returns the status of given unit at that time.
 	// 	Returns unit info and nil if the given uint's status is successfully fetched. Unless returns nil and error
-	Unit_Status(pUnitName *string)(*atypes.AppUnitInfo,error)
-	
-	
+	Unit_Status(pUnitName *string) (*atypes.AppUnitInfo, error)
+
 	// Get_WSClient returns the instance of the Web Socket client defined in the config file
 	// A new instance will be created and return.
 	// If failed then returns nil and error

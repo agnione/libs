@@ -29,9 +29,9 @@
 package iappunit
 
 import (
-	iappfm "agnione/v1/src/appfm/iappfw"
-	atypes "agnione/v1/src/appfm/types"
-	build "agnione/v1/src/lib"
+	iappfm "agnione/v2/src/appfm/iappfw"
+	atypes "agnione/v2/src/appfm/types"
+	build "agnione/v2/src/lib"
 )
 
 // IAppUnit the interface for the AgniOne Application Unit
@@ -49,7 +49,7 @@ type IAppUnit interface {
 	// Parameter config_fike - unit configuration file name
 	// Returns true if suceess, unless false
 	Initialize(frm_instance iappfm.IAgniApp, instance_id int,
-		appunit_name string, appunit_path string,config_file string) (bool, error)
+		appunit_name string, appunit_path string, config_file string) (bool, error)
 
 	// IsInitialized returns the initialize status of the application unit
 	IsInitialized() bool
@@ -71,6 +71,9 @@ type IAppUnit interface {
 
 	// Status return the status of the application unit
 	Status() *atypes.AppUnitInfo
+
+	// IsReady return the ready status of the application unit based on its functionality
+	IsReady() bool
 
 	// Info returns the information of the library
 	Info() build.BuildInfo

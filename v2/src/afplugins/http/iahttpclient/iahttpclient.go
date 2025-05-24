@@ -34,8 +34,8 @@
 package iahttpclient
 
 import (
-	atypes "agnione/v1/src/afplugins/http/types"
-	build "agnione/v1/src/lib"
+	atypes "agnione/v2/src/afplugins/http/types"
+	build "agnione/v2/src/lib"
 )
 
 // IHTTPClient interface expose the functions relates to HTTP protocol

@@ -45,12 +45,17 @@ type Info struct {
 // AppInfo holds the complete Application information
 type AppInfo struct {
 	Info
-	Started             string	// started time
-	UpTime              string	// uptime
-	AppUnits            []AppUnitInfo	// Loaded app Unit(s) information
-	PID int						// OS process ID of the Application
-	WSMonitor_Started   bool	// flag to indicate the Web Socket monitoring is started
-	HTTPMonitor_Started bool	// flag to indicate the REST monitoring is started
+	Started             string        // started time
+	UpTime              string        // uptime
+	AppUnits            []AppUnitInfo // Loaded app Unit(s) information
+	PID                 int           // OS process ID of the Application
+	SSEMonitor_Started  bool          // flag to indicate the Web Socket monitoring is started
+	HTTPMonitor_Started bool          // flag to indicate the REST monitoring is started
+}
+
+// AppInfo holds the complete Application information
+type AppReady_Status struct {
+	Status map[string]bool
 }
 
 // structure to hold the file information
@@ -61,31 +66,30 @@ type FileInfo struct {
 	IsDir   bool      // abbreviation for Mode().IsDir()
 }
 
-type MemUsage struct{
-	Heap uint64
+type MemUsage struct {
+	Heap      uint64
 	HeapAlloc uint64
-	Total uint64
-	
+	Total     uint64
 }
 
 // KAppUnit information
 type AppUnitInfo struct {
-	Info        Info	// holds the name & version
-	Mem_Usage   MemUsage	// holds the memory usage
-	Req_Handled uint32	// number of request handled successfully
-	Req_Failed  uint32	// number of request failed to handle
-	Routines    uint16	// count of running number of routines/threads
-	Active 		uint16	// count of current active number executions
+	Info        Info     // holds the name & version
+	Mem_Usage   MemUsage // holds the memory usage
+	Req_Handled uint32   // number of request handled successfully
+	Req_Failed  uint32   // number of request failed to handle
+	Routines    uint32   // count of running number of routines/threads
+	Active      uint32   // count of current active number executions
 }
 
 // / application status
 type AppStatus struct {
-	Mem_Usage      MemUsage	// holds the memory usage	// memory usage	
-	Req_Handled    uint64	// total request handled
-	Req_Failed     uint64	// total request failed
-	Routines       uint16		// count of running routines/thread
-	MonitorClients uint8	// number of web socket monitor clients
-	StatusClients  uint8	// number of REST monitor client
+	Mem_Usage      MemUsage // holds the memory usage	// memory usage
+	Req_Handled    uint64   // total request handled
+	Req_Failed     uint64   // total request failed
+	Routines       uint32   // count of running routines/thread
+	MonitorClients uint8    // number of web socket monitor clients
+	StatusClients  uint8    // number of REST monitor client
 }
 
 // ConvertStoI converts given structure to given interface
@@ -127,11 +131,11 @@ type App struct {
 }
 
 type Appunit struct {
-	Uname    string `json:"uname"`
-	Path     string `json:"path"`
-	ConfigFile   string `json:"config"`
-	Enable   int8   `json:"enable"`
-	PoolSize int8   `json:"pool_size"`
+	Uname      string `json:"uname"`
+	Path       string `json:"path"`
+	ConfigFile string `json:"config"`
+	Enable     int8   `json:"enable"`
+	PoolSize   int8   `json:"pool_size"`
 }
 
 type PlugIn struct {
@@ -139,31 +143,24 @@ type PlugIn struct {
 	Ifname string `json:"ifname"`
 	Path   string `json:"path"`
 	Name   string `json:"name"`
-	Enable int8    `json:"enable"`
+	Enable int8   `json:"enable"`
 }
 
 type FMConfig struct {
 	Core struct {
 		Log struct {
-			Level        string `json:"leg_level"`
-			File_MaxSize  int    `json:"log_file_max_size"`
+			Level          string `json:"leg_level"`
+			File_MaxSize   int    `json:"log_file_max_size"`
 			File_Base_Path string `json:"log_file_base_path"`
 		} `json:"log"`
-		HTTPMonitor struct {
-			Host         string `json:"host"`
-			Port         *int    `json:"port"`
-			Enable       int8    `json:"enable"`
-			AutoStart int8    `json:"auto_start"`
-		} `json:"http_monitor"`
-		WSMonitor struct {
-			Host      string `json:"host"`
-			Port      *int    `json:"port"`
-			Enable    int8    `json:"enable"`
-		} `json:"ws_monitor"`
+		Monitor struct {
+			Host string `json:"host"`
+			Port *int   `json:"port"`
+		} `json:"monitor"`
 	} `json:"core"`
 	Plugins struct {
-		HTTP []PlugIn  `json:"http"`
+		HTTP      []PlugIn `json:"http"`
 		Websocket []PlugIn `json:"websocket"`
-		Mailer []PlugIn `json:"mailer"`
+		Mailer    []PlugIn `json:"mailer"`
 	} `json:"plugins"`
 }
