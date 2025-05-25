@@ -99,6 +99,7 @@ func (appu *AUBase) Initialize(pFM_Instance iappfm.IAgniApp, pInstance_ID int,
 	appu.Is_Initialized = true
 	appu.Stopper = nil
 
+	appu.App_UID = pUnit_Name + "-" + strconv.Itoa(appu.ID) + "-" + strconv.Itoa(appu.AppFramework.PID())
 	appu.Read_Memory_Usage()
 
 	return true, nil
