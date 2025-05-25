@@ -315,7 +315,7 @@ func (appu *AUBase) ExecuteandFetch(os_command *string) (string, error) {
 	}
 }
 
-func (appu *AUBase) Send_Monitor_Message(pMessage []byte) {
+func (appu *AUBase) Send_Event_Message(pMessage []byte) {
 	appu.AppFramework.Send_Event(string(pMessage))
 }
 
