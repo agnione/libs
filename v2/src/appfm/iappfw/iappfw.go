@@ -165,7 +165,7 @@ type IAgniApp interface {
 	Get_App_Status() atypes.AppStatus
 
 	// Get_App_Status returns the current application Units ready status as [atypes.AppReady_Status] [http://example.com]
-	Get_Ready_Status() *atypes.AppReady_Status
+	Get_Ready_Status() map[string]bool
 
 	// Get_App_Info returns the current application information as [ztypes.AppInfo] http://example.com
 	Get_App_Info() atypes.AppInfo

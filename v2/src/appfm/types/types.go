@@ -35,7 +35,10 @@
 //     ---------------------------------------------------------------------------------------------------------------------
 package atypes
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type Info struct {
 	Name    string
@@ -55,7 +58,7 @@ type AppInfo struct {
 
 // AppInfo holds the complete Application information
 type AppReady_Status struct {
-	Status map[string]bool
+	Status sync.Map
 }
 
 // structure to hold the file information
