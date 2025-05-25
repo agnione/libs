@@ -316,11 +316,11 @@ func (appu *AUBase) ExecuteandFetch(os_command *string) (string, error) {
 }
 
 func (appu *AUBase) Send_Event_Message(pMessage []byte) {
-	appu.AppFramework.Send_Event(string(pMessage))
+	go appu.AppFramework.Send_Event(string(pMessage))
 }
 
 func (appu *AUBase) Write2Log(log_entry string, log_level atypes.LogLevel) {
-	appu.AppFramework.Write2Log(log_entry, log_level)
+	go appu.AppFramework.Write2Log(log_entry, log_level)
 }
 
 func (appu *AUBase) Read_Memory_Usage() {
