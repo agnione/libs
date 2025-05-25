@@ -308,6 +308,8 @@ func (appu *AUBase) Get_WSClient(pType *string) (iawsclient.IAWSClient, error) {
 
 // Get_RESTClient returns the Logger plugin instance
 func (appu *AUBase) ExecuteandFetch(os_command *string) (string, error) {
+	defer recover()
+
 	if appu.AppFramework == nil {
 		return "", errors.New("app instance is not initialized")
 	} else {
@@ -316,11 +318,18 @@ func (appu *AUBase) ExecuteandFetch(os_command *string) (string, error) {
 }
 
 func (appu *AUBase) Send_Event_Message(pMessage []byte) {
-	go appu.AppFramework.Send_Event(string(pMessage))
+	go func() {
+		defer recover()
+		appu.AppFramework.Send_Event(string(pMessage))
+	}()
+
 }
 
 func (appu *AUBase) Write2Log(log_entry string, log_level atypes.LogLevel) {
-	go appu.AppFramework.Write2Log(log_entry, log_level)
+	go func() {
+		defer recover()
+		appu.AppFramework.Write2Log(log_entry, log_level)
+	}()
 }
 
 func (appu *AUBase) Read_Memory_Usage() {
