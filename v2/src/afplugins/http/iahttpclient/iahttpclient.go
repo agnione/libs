@@ -41,43 +41,43 @@ import (
 // IHTTPClient interface expose the functions relates to HTTP protocol
 type IAHTTPClient interface {
 
-	//Cretes a new isntance of IZHTTPClient
+	//Creates a new instance of IZHTTPClient
 	New() interface{}
 
 	//Initialize the instance.
 	//
-	// Returns the ture if initialized scussessfully. Unless false
+	// Returns the true if initialized scussessfully. Unless false
 	Initialize(pInstance_ID int) bool
 
-	// GetID retuns the pre-set id of the current instance
+	// GetID returns the pre-set id of the current instance
 	GetID() (pInstance_ID int)
 
-	// Get perfoms a HTTP GET request based on the given AHTTPRequest.
+	// Get performs a HTTP GET request based on the given AHTTPRequest.
 	//	Parameter http_request atypes.AHTTPRequest - valid AHTTPRequest
 	//
 	// If success returns AHTTPResponse with result (status code, headers and body in []bytes)
-	// If failed then returns AHTTPResponse with valid status code and error with menaningful error
+	// If failed then returns AHTTPResponse with valid status code and error with meaningful error
 	Get(pHTTP_Request *atypes.AHTTPRequest) (*atypes.AHTTPResponse, error)
 
-	// Post perfoms a HTTP POST request based on the given AHTTPRequest.
+	// Post performs a HTTP POST request based on the given AHTTPRequest.
 	//
 	//	Parameter http_request atypes.AHTTPRequest - valid AHTTPRequest
 	// If success returns AHTTPResponse with result (status code, headers and body in []bytes)
-	// If failed then returns AHTTPResponse with valid status code and error with menaningful error
+	// If failed then returns AHTTPResponse with valid status code and error with meaningful error
 	Post(httppHTTP_Request_request *atypes.AHTTPRequest) (*atypes.AHTTPResponse, error)
 
 	// Put perfoms a HTTP PUT request based on the given AHTTPRequest.
 	//
 	//	Parameter http_request atypes.AHTTPRequest - valid AHTTPRequest
 	// If success returns AHTTPResponse with result (status code, headers and body in []bytes)
-	// If failed then returns AHTTPResponse with valid status code and error with menaningful error
+	// If failed then returns AHTTPResponse with valid status code and error with meaningful error
 	Put(pHTTP_Request *atypes.AHTTPRequest) (*atypes.AHTTPResponse, error)
 
 	// Delete perfoms a HTTP DELETE request based on the given AHTTPRequest.
 	//
 	//	Parameter http_request atypes.AHTTPRequest - valid AHTTPRequest
 	// If success returns AHTTPResponse with result (status code, headers and body in []bytes)
-	// If failed then returns AHTTPResponse with valid status code and error with menaningful error
+	// If failed then returns AHTTPResponse with valid status code and error with meaningful error
 	Delete(pHTTP_Request *atypes.AHTTPRequest) (*atypes.AHTTPResponse, error)
 
 	// Info returns the build information of the library

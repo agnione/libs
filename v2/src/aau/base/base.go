@@ -29,8 +29,8 @@
 //     Class/module  :   AUBase - AgniOne Application Framework
 //     Objective     :   Implement the KAU base library
 //     ---------------------------------------------------------------------------------------------------------------------
-//     Uses to encapsulte all the the common methods onf ZAU
-//     Helps to buid the custom/business specific ZAU with more focus
+//     Uses to encapsulate all the the common methods onf ZAU
+//     Helps to build the custom/business specific ZAU with more focus
 //     ---------------------------------------------------------------------------------------------------------------------
 //     Author			Date		Action		Description
 //     --------------------------------------------------------------------------------------------------------------------
@@ -59,12 +59,13 @@ import (
 	"sync/atomic"
 )
 
-// AUBase base struct to hold the propeties of the Application unit
+// AUBase base struct to hold the properties of the Application unit
 type AUBase struct {
 	Info_Lock      *sync.Mutex
 	Unit_Info      *atypes.AppUnitInfo
 	ID             int             /// ID of the instance
 	AppFramework   iappfm.IAgniApp /// instance of the running framework
+	currentMem     runtime.MemStats
 	Unit_Name      string
 	Config_File    string
 	Unit_Path      string
@@ -76,7 +77,7 @@ type AUBase struct {
 
 // Initialize initializes the properties of the base struct.
 //
-// Reterns true and nil when success
+// Returns true and nil when success
 // If failed then returns false and error message
 func (appu *AUBase) Initialize(pFM_Instance iappfm.IAgniApp, pInstance_ID int,
 	pUnit_Name string, pUnit_Path string, pConfig_File string) (bool, error) {
@@ -84,7 +85,7 @@ func (appu *AUBase) Initialize(pFM_Instance iappfm.IAgniApp, pInstance_ID int,
 	if pFM_Instance == nil {
 		appu.Is_Initialized = false
 		appu.AppFramework.Write2Console(fmt.Sprintf("%d fm_instance iappfm.IAgniApp is NIL", pInstance_ID))
-		return false, fmt.Errorf("%d fm_instance iappfm.IKApp is NIL", pInstance_ID)
+		return false, fmt.Errorf("%d fm_instance iappfm.IAgniApp is NIL", pInstance_ID)
 	}
 
 	appu.Unit_Info = new(atypes.AppUnitInfo)
@@ -129,7 +130,7 @@ func (appu *AUBase) Stop() (bool, error) {
 	if appu.AppFramework == nil {
 		return false, fmt.Errorf("instance is not initialized")
 	}
-	//fmt.Printf("%d In the  BASE STOP %s..... 2 \n", appu.ID, appu.Unit_name)
+
 	appu.AppFramework.Write2Log(appu.App_UID+" - Stopping the AUBase.....", atypes.LOG_INFO)
 	appu.AppFramework.Send_Event(appu.App_UID + " - Stopping the AUBase.....")
 
@@ -334,10 +335,9 @@ func (appu *AUBase) Write2Log(log_entry string, log_level atypes.LogLevel) {
 }
 
 func (appu *AUBase) Read_Memory_Usage() {
-	var _currentMem runtime.MemStats
-	runtime.ReadMemStats(&_currentMem)
 
-	appu.Unit_Info.Mem_Usage.Heap = _currentMem.Alloc - appu.Unit_Info.Mem_Usage.Heap
-	appu.Unit_Info.Mem_Usage.HeapAlloc = _currentMem.HeapAlloc - appu.Unit_Info.Mem_Usage.HeapAlloc
-	appu.Unit_Info.Mem_Usage.Total = _currentMem.TotalAlloc - appu.Unit_Info.Mem_Usage.Total
+	runtime.ReadMemStats(&appu.currentMem)
+	appu.Unit_Info.Mem_Usage.Heap = appu.currentMem.Alloc - appu.Unit_Info.Mem_Usage.Heap
+	appu.Unit_Info.Mem_Usage.HeapAlloc = appu.currentMem.HeapAlloc - appu.Unit_Info.Mem_Usage.HeapAlloc
+	appu.Unit_Info.Mem_Usage.Total = appu.currentMem.TotalAlloc - appu.Unit_Info.Mem_Usage.Total
 }

@@ -30,7 +30,7 @@
 //     Ajith de Silva		01/01/2024	Created 	Created the initial version
 //     Ajith de Silva		01/01/2024	Updated 	separate appinfo and status into to structs
 //     Ajith de Silva		02/26/2024	Added 		Included the Log level constants
-//     Vindhya Bandara		03/04/2024	Added		Included the MainConfig constants
+//     Ajith de Silva		03/04/2024	Added		Included the MainConfig constants
 //     Ajith de Silva		10/06/2024	Added		added the profiler port and changed all ports type to uint16
 //     ---------------------------------------------------------------------------------------------------------------------
 package atypes
