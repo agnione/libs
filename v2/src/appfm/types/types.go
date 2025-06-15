@@ -87,12 +87,13 @@ type AppUnitInfo struct {
 
 // / application status
 type AppStatus struct {
-	Mem_Usage      MemUsage // holds the memory usage	// memory usage
-	Req_Handled    uint64   // total request handled
-	Req_Failed     uint64   // total request failed
-	Routines       uint32   // count of running routines/thread
-	MonitorClients uint8    // number of web socket monitor clients
-	StatusClients  uint8    // number of REST monitor client
+	Mem_Usage     MemUsage // holds the memory usage	// memory usage
+	Req_Handled   uint64   // total request handled
+	Req_Failed    uint64   // total request failed
+	Routines      uint32   // count of running routines/thread
+	EventsClients uint8    // number of web socket monitor clients
+	StatusClients uint8    // number of REST monitor client
+	LogClients    uint8    // number of REST monitor client
 }
 
 // ConvertStoI converts given structure to given interface
