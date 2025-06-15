@@ -157,8 +157,9 @@ type FMConfig struct {
 			File_Base_Path string `json:"log_file_base_path"`
 		} `json:"log"`
 		Monitor struct {
-			Host string `json:"host"`
-			Port *int   `json:"port"`
+			Host         string `json:"host"`
+			Port         *int   `json:"port"`
+			Observe_Port *int   `json:"observe_port"`
 		} `json:"monitor"`
 	} `json:"core"`
 	Plugins struct {
